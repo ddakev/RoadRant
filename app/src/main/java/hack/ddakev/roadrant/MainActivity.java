@@ -17,6 +17,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.HapticFeedbackConstants;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -220,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     JSONObject reviewInner = new JSONObject();
                     JSONObject review = new JSONObject();
                     reviewInner.put("driver_id", getDriverId());
-                    reviewInner.put("rating", getRating());
+                    reviewInner.put("bad_driver", getRating()^true);
                     reviewInner.put("description", getComment());
                     review.put("review", reviewInner);
                     this.status ++;
@@ -327,8 +328,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         cameraIcon.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v)
             {
-                v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK);
                 dispatchTakePictureIntent();
+                v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK);
             }
         });
         thumbsUp.setOnClickListener(new View.OnClickListener() {
@@ -344,6 +345,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     ((ImageView)v).setImageResource(R.drawable.thumbs_up_highlight);
                 }
                 ratingN = 1;
+                v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK);
             }
         });
         thumbsDown.setOnClickListener(new View.OnClickListener() {
@@ -359,6 +361,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     ((ImageView)v).setImageResource(R.drawable.thumbs_down_highlight);
                 }
                 ratingN = 0;
+                v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK);
             }
         });
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -388,6 +391,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
                 Review data = new Review(license, ratingN==1, commentS, lat, lon);
                 reviews.add(data);
+                Toast.makeText(getBaseContext(), "Please wait", Toast.LENGTH_SHORT).show();
+                v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK);
             }
         });
     }
