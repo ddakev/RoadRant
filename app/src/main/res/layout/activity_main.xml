@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="hack.ddakev.roadrant.MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/licenseLayout"
+        android:orientation="horizontal"
+        android:layout_weight="1"
+        >
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:layout_weight="1"
+            android:hint="Plate Number"
+            android:textSize="13pt"
+            android:layout_alignParentStart="true"
+            android:layout_gravity="left"
+            android:id="@+id/plateNumber" />
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="30dp"
+            android:id="@+id/cameraButton"
+            android:layout_alignParentStart="true"
+            android:src="@drawable/camera_icon"
+            android:layout_gravity="left"
+
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:id="@+id/thumbsButtons"
+        android:orientation="horizontal"
+        android:layout_below="@+id/licenseLayout"
+        android:layout_weight="1"
+        >
+
+        <ImageView
+            android:id="@+id/thumbsup"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_alignParentStart="true"
+            android:layout_gravity="left"
+            android:src="@drawable/thumbs_up"
+            />
+
+        <ImageView
+            android:id="@+id/thumbsdown"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginLeft="10dp"
+            android:translationY="10dp"
+            android:layout_gravity="left"
+            android:layout_alignParentStart="true"
+            android:src="@drawable/thumbs_down"
+            />
+
+    </LinearLayout>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lines="5"
+        android:gravity="top"
+        android:inputType="textMultiLine"
+        android:textSize="13pt"
+        android:maxLength="150"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/thumbsButtons"
+        android:id="@+id/comment"
+        android:hint="Write comment..." />
+
+    <Button
+        android:text="Post review"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorAccent"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="11pt"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/comment"
+        android:layout_alignParentStart="true"
+        android:id="@+id/sendButton" />
+
+
+</RelativeLayout>
