@@ -30,8 +30,8 @@
             android:id="@+id/plateNumber" />
 
         <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
             android:layout_marginLeft="30dp"
             android:id="@+id/cameraButton"
             android:layout_alignParentStart="true"
@@ -43,18 +43,19 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="90dp"
+        android:layout_width="wrap_content"
+        android:layout_height="100dp"
         android:id="@+id/thumbsButtons"
         android:orientation="horizontal"
+        android:layout_centerHorizontal="true"
         android:layout_below="@+id/licenseLayout"
         android:layout_weight="1"
         >
 
         <ImageView
             android:id="@+id/thumbsup"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
             android:layout_alignParentStart="true"
             android:layout_gravity="left"
             android:src="@drawable/thumbs_up"
@@ -62,9 +63,9 @@
 
         <ImageView
             android:id="@+id/thumbsdown"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginLeft="10dp"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginLeft="30dp"
             android:translationY="10dp"
             android:layout_gravity="left"
             android:layout_alignParentStart="true"

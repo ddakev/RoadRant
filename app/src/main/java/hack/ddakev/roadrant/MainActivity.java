@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     int ratingN;
     double lat;
     double lon;
-    final String url = "http://road-rant.com/drivers";
+    final String url = "http://road-rant.com/";
     ArrayList<Review> reviews;
     GoogleApiClient mGoogleApiClient;
     LocationRequest lr;
@@ -127,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         private double latitude;
         private double longitude;
         private String driver_id;
-        private String location_id;
+        private String review_id;
         private int status; //0 - not started; 1 - sent location data; 2 - sent driver data; 3 - sent review data/finished
 
         public Review(String plateN, boolean rating, String comment, double lat, double longt)
@@ -166,6 +167,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             return longitude;
         }
 
+        public void setReviewId(String id)
+        {
+            this.review_id = id;
+        }
+
+        public String getReviewId()
+        {
+            return this.review_id;
+        }
+
         public void setDriverId(String id)
         {
             this.driver_id = id;
@@ -176,21 +187,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             return this.driver_id;
         }
 
-        public void setLocationId(String id)
-        {
-            this.location_id = id;
-        }
-
-        public String getLocationId()
-        {
-            return this.getLocationId();
-        }
-
         public void setId(String id) {
             if(this.status == 1)
-                setLocationId(id);
-            else if(this.status == 2)
                 setDriverId(id);
+            else if(this.status == 2)
+                setReviewId(id);
         }
 
         public int getStatus() {
@@ -202,14 +203,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if(this.status == 0)
             {
                 try {
-                    JSONObject jsonLocInner = new JSONObject();
-                    JSONObject jsonLoc = new JSONObject();
-                    jsonLocInner.put("longitude", getLongitude());
-                    jsonLocInner.put("latitude", getLatitude());
-                    jsonLoc.put("location", jsonLocInner.toString());
-                    System.out.println(jsonLoc.toString());
+                    JSONObject driverInner = new JSONObject();
+                    JSONObject driver = new JSONObject();
+                    driverInner.put("license_plate", getPlate());
+                    driver.put("driver", driverInner);
+                    System.out.println(driver.toString());
                     this.status ++;
-                    new HTTPAsyncSend(this, jsonLoc).execute(url);
+                    new HTTPAsyncSend(this, driver).execute(url + "drivers");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -217,13 +217,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             else if(this.status == 1)
             {
                 try {
-                    JSONObject driverInner = new JSONObject();
-                    JSONObject driver = new JSONObject();
-                    driverInner.put("license_plate", getPlate());
-                    driver.put("driver", driverInner.toString());
-                    System.out.println(driver.toString());
+                    JSONObject reviewInner = new JSONObject();
+                    JSONObject review = new JSONObject();
+                    reviewInner.put("driver_id", getDriverId());
+                    reviewInner.put("rating", getRating());
+                    reviewInner.put("description", getComment());
+                    review.put("review", reviewInner);
                     this.status ++;
-                    new HTTPAsyncSend(this, driver).execute(url);
+                    new HTTPAsyncSend(this, review).execute(url + "reviews");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -231,15 +232,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             else if(this.status == 2)
             {
                 try {
-                    JSONObject reviewInner = new JSONObject();
-                    JSONObject review = new JSONObject();
-                    reviewInner.put("driver_id", getDriverId());
-                    reviewInner.put("location_id", getLocationId());
-                    reviewInner.put("rating", getRating());
-                    reviewInner.put("description", getComment());
-                    review.put("review", reviewInner.toString());
+                    JSONObject jsonLocInner = new JSONObject();
+                    JSONObject jsonLoc = new JSONObject();
+                    jsonLocInner.put("driver_id", getDriverId());
+                    jsonLocInner.put("review_id", getReviewId());
+                    jsonLocInner.put("longitude", getLongitude());
+                    jsonLocInner.put("latitude", getLatitude());
+                    jsonLoc.put("location", jsonLocInner);
+                    System.out.println(jsonLoc.toString());
                     this.status ++;
-                    new HTTPAsyncSend(this, review).execute(url);
+                    new HTTPAsyncSend(this, jsonLoc).execute(url + "locations");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -262,15 +264,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             public HTTPAsyncSend(Review sender, JSONObject json)
             {
-                data = json;
                 this.sender = sender;
+                this.data = json;
             }
 
             @Override
             protected String doInBackground(String... urls)
             {
 
-                return post(urls[0], data);
+                return post(urls[0], data, sender.getStatus());
             }
 
             @Override
@@ -281,17 +283,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 try {
                     JSONObject jsonRes = new JSONObject(result);
                     String id = null;
-                    if(sender.getStatus() == 1)
-                        id = new JSONObject(jsonRes.get("location").toString()).getString("id");
-                    else if(sender.getStatus() == 2)
-                        id = new JSONObject(jsonRes.get("driver").toString()).getString("id");
+                    id = jsonRes.getJSONObject("data").getString("id");
                     if(id != null) {
                         sender.setId(id);
                         sender.sendNext();
                     }
-                    else if(sender.getStatus() == 3)
+                    if(sender.getStatus() == 3)
                         System.out.println("Finished sending");
-                    else
+                    else if(id == null)
                         System.out.println("Error obtaining id, stop sending info");
                 } catch (JSONException e) {
                     System.out.println("Error in parsing response JSON id");
@@ -328,6 +327,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         cameraIcon.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v)
             {
+                v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK);
                 dispatchTakePictureIntent();
             }
         });
@@ -386,43 +386,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     Toast.makeText(getBaseContext(), "Choose rating!", Toast.LENGTH_LONG).show();
                     return;
                 }
-                //When done debugging, uncomment top line and delete from here
                 Review data = new Review(license, ratingN==1, commentS, lat, lon);
                 reviews.add(data);
-                try {
-                    JSONObject jsonLocInner = new JSONObject();
-                    JSONObject jsonLoc = new JSONObject();
-                    jsonLocInner.put("longitude", data.getLongitude());
-                    jsonLocInner.put("latitude", data.getLatitude());
-                    jsonLoc.put("location", jsonLocInner.toString());
-                    System.out.println(new JSONObject(jsonLoc.get("location").toString()).getString("longitude"));
-
-                    JSONObject driverInner = new JSONObject();
-                    JSONObject driver = new JSONObject();
-                    driverInner.put("license_plate", data.getPlate());
-                    driver.put("driver", driverInner.toString());
-                    System.out.println(driver.toString());
-
-                    JSONObject reviewInner = new JSONObject();
-                    JSONObject review = new JSONObject();
-                    reviewInner.put("driver_id", "id_from_server");
-                    reviewInner.put("location_id", "id_from_server");
-                    reviewInner.put("rating", data.getRating());
-                    reviewInner.put("description", data.getComment());
-                    review.put("review", reviewInner.toString());
-
-                    System.out.println(review.toString());
-
-                    Toast.makeText(getBaseContext(), "Review sent! (but not really)", Toast.LENGTH_LONG).show();
-                    plateBox.setText("");
-                    commentBox.setText("");
-                    ratingN = -1;
-                    thumbsUp.setImageResource(R.drawable.thumbs_up);
-                    thumbsDown.setImageResource(R.drawable.thumbs_down);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                //to here
             }
         });
     }
@@ -465,71 +430,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onStop();
     }
 
-    public static String post(String url, JSONObject data)
+    public static String post(String url, JSONObject data, int status)
     {
-        /*HttpURLConnection connection = null;
-        StringBuilder response = new StringBuilder();
-        try {
-            URL sendLoc = new URL(url);
-            connection = (HttpURLConnection) sendLoc.openConnection();
-            connection.setDoOutput(true);
-            connection.setRequestMethod("POST");
-            connection.setUseCaches(false);
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(10000);
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Accept", "application/json");
-            connection.connect();
-
-            OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
-            out.write(data.toString());
-            out.close();
-
-            int res = connection.getResponseCode();
-            if(res == HttpURLConnection.HTTP_OK) {
-                InputStreamReader in = new InputStreamReader(connection.getInputStream());
-                BufferedReader bIn = new BufferedReader(in);
-                String responseLine = "";
-                while((responseLine = bIn.readLine()) != null)
-                {
-                    response.append(responseLine + "\n");
-                }
-                bIn.close();
-                System.out.println(response.toString());
-            }
-            else
-            {
-                System.out.println(connection.getResponseMessage());
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if(connection != null)
-                connection.disconnect();
-        }
-        return response.toString();*/
         OkHttpClient client = new OkHttpClient();
-        MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
         OutputStream out = null;
         Response response = null;
         try {
+            System.out.println("1");
             URL sendLoc = new URL(url);
 
-            RequestBody requestBody = new MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart(RequestBody.create("driver", MEDIA_TYPE_JSON, data.toString()))
-                    .build();
+            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), data.toString());
+            System.out.println("2");
             Request request = new Request.Builder()
                     .header("Content-type", "application/json")
                     .url(sendLoc)
                     .post(requestBody)
                     .build();
+            System.out.println(data.toString());
+            System.out.println(request.toString());
+            System.out.println(request.body().contentType());
             response = client.newCall(request).execute();
-            if (response.code() != 200) throw new IOException("Unexpected code " + response);
-            else
-                System.out.println(response.toString());
+            System.out.println(response.toString());
+            if (response.code() != 200 && response.code() != 201) throw new IOException("Unexpected code " + response);
         } catch (ProtocolException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {
