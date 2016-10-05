@@ -237,8 +237,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     JSONObject jsonLoc = new JSONObject();
                     jsonLocInner.put("driver_id", getDriverId());
                     jsonLocInner.put("review_id", getReviewId());
-                    jsonLocInner.put("longitude", getLongitude());
                     jsonLocInner.put("latitude", getLatitude());
+                    jsonLocInner.put("longitude", getLongitude());
                     jsonLoc.put("location", jsonLocInner);
                     System.out.println(jsonLoc.toString());
                     this.status ++;
@@ -377,11 +377,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if(license.equals(""))
                 {
                     Toast.makeText(getBaseContext(), "Enter license plate number!", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                if(commentS.equals(""))
-                {
-                    Toast.makeText(getBaseContext(), "Enter comment!", Toast.LENGTH_LONG).show();
                     return;
                 }
                 if(ratingN == -1)
